@@ -47,24 +47,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python 3.x
-      uses: actions/setup-python@v4
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
       with:
-        python-version: 3.x
-    
-    - name: Install qt
-      run: | 
-        pip install yaqti
-    - if: runner.os == 'Linux'
-      run: |
-        python -m yaqti install --version 6.2.0 --platform desktop --os linux --set-envs &&
-        echo "qt_dir=${{ github.workspace }}/qt/6.2.0" >> "$GITHUB_ENV"
-    - if: runner.os == 'Windows'
-      run: |
-        python -m yaqti install --version 6.2.0 --platform desktop --os windows --set-envs &&
-        echo "qt_dir=${{ github.workspace }}/qt/6.2.0" >> "$GITHUB_ENV" &&
-        ls -al ${{ github.workspace }}/qt &&
-        ls -al ${{ github.workspace }}/qt/6.2.0
+        version: 6.7.1
+        modules: qtpositioning
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -81,7 +68,6 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_PREFIX_PATH=${{ env.qt_dir }}
         -S ${{ github.workspace }}
 
     - name: Build
