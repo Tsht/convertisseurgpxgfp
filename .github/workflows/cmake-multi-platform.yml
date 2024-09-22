@@ -57,10 +57,12 @@ jobs:
         pip install yaqti
     - if: runner.os == 'Linux'
       run: |
-        python -m yaqti install --version 6.2.0 --platform desktop --os linux
+        python -m yaqti install --version 6.2.0 --platform desktop --os linux &&
+        echo "qt_dir=/home/runner/work/disk_usage/disk_usage/qt/6.2.0/gcc_64" >> "$GITHUB_ENV"
     - if: runner.os == 'Windows'
       run: |
-        python -m yaqti install --version 6.2.0 --platform desktop --os windows
+        python -m yaqti install --version 6.2.0 --platform desktop --os windows &&
+        echo "qt_dir=/Users/runner/work/disk_usage/disk_usage/qt/6.2.0/windows" >> "$GITHUB_ENV"
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -77,6 +79,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_PREFIX_PATH=${{ qt_dir }}
         -S ${{ github.workspace }}
 
     - name: Build
