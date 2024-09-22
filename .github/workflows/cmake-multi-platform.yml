@@ -55,10 +55,10 @@ jobs:
     - name: Install qt
       run: | 
         pip install yaqti
-    - if: runner.os == "Linux"
+    - if: runner.os == 'Linux'
       run: |
         python -m yaqti install --version 6.7.0 --platform desktop --os linux
-    - if: runner.os == "Windows"
+    - if: runner.os == 'Windows'
       run: |
         python -m yaqti install --version 6.7.0 --platform desktop --os windows
 
