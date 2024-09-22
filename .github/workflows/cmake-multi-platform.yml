@@ -58,11 +58,11 @@ jobs:
     - if: runner.os == 'Linux'
       run: |
         python -m yaqti install --version 6.2.0 --platform desktop --os linux --set-envs &&
-        echo "qt_dir=/home/runner/work/${{ github.workspace }}/qt/6.2.0/gcc_64" >> "$GITHUB_ENV"
+        echo "qt_dir=${{ github.workspace }}/qt/6.2.0/gcc_64" >> "$GITHUB_ENV"
     - if: runner.os == 'Windows'
       run: |
         python -m yaqti install --version 6.2.0 --platform desktop --os windows --set-envs &&
-        echo "qt_dir=/Users/runner/work/${{ github.workspace }}/qt/6.2.0/windows" >> "$GITHUB_ENV"
+        echo "qt_dir=${{ github.workspace }}/qt/6.2.0/windows" >> "$GITHUB_ENV"
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
