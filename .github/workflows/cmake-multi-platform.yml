@@ -57,10 +57,10 @@ jobs:
         pip install yaqti
     - if: runner.os == 'Linux'
       run: |
-        python -m yaqti install --version 6.7.0 --platform desktop --os linux
+        python -m yaqti install --version 6.2.0 --platform desktop --os linux
     - if: runner.os == 'Windows'
       run: |
-        python -m yaqti install --version 6.7.0 --platform desktop --os windows
+        python -m yaqti install --version 6.2.0 --platform desktop --os windows
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
