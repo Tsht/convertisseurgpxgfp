@@ -25,7 +25,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        c_compiler: [gcc, clang, cl]
+        c_compiler: [gcc, cl]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -33,14 +33,9 @@ jobs:
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
         exclude:
           - os: windows-latest
             c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
           - os: ubuntu-latest
             c_compiler: cl
 
@@ -59,6 +54,8 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "deploy-output-dir=${{ github.workspace }}/deploy" >> "$GITHUB_OUTPUT"
+        echo "build-name=$(date +'%Y-%m-%dT%H')" >> "$GITHUB_OUTPUT"
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -68,9 +65,46 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }}
-
-    - name: Build
+        -S ${{ github.workspace }} 
+        
+    - name: Build 
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: |
+        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+    - name: Install
+      run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --prefix "${{ steps.strings.outputs.deploy-output-dir }}"
+    
+    - name: Package Windows
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        cd ${{ steps.strings.outputs.deploy-output-dir }}
+        cpack -G ZIP -C ${{ matrix.build_type }} --config ${{ steps.strings.outputs.build-output-dir }}/CPackConfig.cmake
+        cd ..
+
+    - name: Package Linux
+      if: runner.os == 'Linux'
+      run: |
+        cd ${{ steps.strings.outputs.deploy-output-dir }}
+        cpack -G TGZ -C ${{ matrix.build_type }} --config ${{ steps.strings.outputs.build-output-dir }}/CPackConfig.cmake
+        cd ..
+
+    - name: Upload Release Asset Linux
+      if: runner.os == 'Linux'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ steps.strings.outputs.deploy-output-dir }}/*.tar.gz
+        file_glob: true
+        tag: ${{ github.ref }}-${{ steps.strings.outputs.build-name }}
+
+    - name: Upload Release Asset Windows
+      if: runner.os == 'Windows'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ steps.strings.outputs.deploy-output-dir }}/*.zip
+        file_glob: true
+        tag: ${{ github.ref }}-${{ steps.strings.outputs.build-name }}
 
