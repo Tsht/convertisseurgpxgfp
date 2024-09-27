@@ -54,7 +54,7 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-        echo "deploy-output-dir=${{ github.workspace }}/deploy" >> "$GITHUB_OUTPUT"
+        echo "deploy-output-dir=${{ github.workspace }}" >> "$GITHUB_OUTPUT"
         echo "build-name=$(date +'%Y-%m-%dT%H')" >> "$GITHUB_OUTPUT"
 
     - name: Configure CMake
@@ -65,12 +65,13 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }} &&
-        cmake --install ${{ steps.strings.outputs.deploy-output-dir }}
-
-    - name: Build
+        -S ${{ github.workspace }} 
+        
+    - name: Build and deploy
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: |
+      cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      cmake --install ${{ steps.strings.outputs.build-output-dir }}
     
     - name: Package build linux
       if: runner.os == 'Linux'
