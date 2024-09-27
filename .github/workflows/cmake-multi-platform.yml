@@ -67,29 +67,36 @@ jobs:
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -S ${{ github.workspace }} 
         
-    - name: Build and deploy
+    - name: Build 
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: |
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-        cmake --install ${{ steps.strings.outputs.build-output-dir }}
+
+    - name: Install
+      run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --prefix "${{ steps.strings.outputs.deploy-output-dir }}"
     
-    - name: Package build linux
+    - name: Package Windows
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        cd ${{ steps.strings.outputs.deploy-output-dir }}
+        cpack -G ZIP -C ${{ matrix.build_type }}
+        cd ..
+
+    - name: Package Linux
       if: runner.os == 'Linux'
       run: |
         cd ${{ steps.strings.outputs.deploy-output-dir }}
-        zip -r convertisseurgfp-${{ matrix.os }}.zip ./**
-
-    - name: Package build Windows
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        Compress-Archive -Path ${{ steps.strings.outputs.deploy-output-dir }}\* -DestinationPath ${{ steps.strings.outputs.deploy-output-dir }}\convertisseurgfp-${{ matrix.os }}.zip
+        cpack -G TGZ -C ${{ matrix.build_type }}
+        cd ..
 
     - name: Upload Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ steps.strings.outputs.deploy-output-dir }}/convertisseurgfp-${{ matrix.os }}.zip
+        file: |
+          ${{ steps.strings.outputs.deploy-output-dir }}/*.zip
+          ${{ steps.strings.outputs.deploy-output-dir }}/*.tar.gz
         asset_name: ConvertisseurGFP-${{ matrix.os }}.zip
         tag: ${{ github.ref }}-${{ steps.strings.outputs.build-name }}
 
