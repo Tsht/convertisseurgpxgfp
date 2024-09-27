@@ -90,13 +90,21 @@ jobs:
         cpack -G TGZ -C ${{ matrix.build_type }} --config ${{ steps.strings.outputs.build-output-dir }}/CPackConfig.cmake
         cd ..
 
-    - name: Upload Release Asset
+    - name: Upload Release Asset Linux
+      if: runner.os == 'Linux'
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: |
-          ${{ steps.strings.outputs.deploy-output-dir }}/*.zip
-          ${{ steps.strings.outputs.deploy-output-dir }}/*.tar.gz
+        file: ${{ steps.strings.outputs.deploy-output-dir }}/*.tar.gz
+        asset_name: ConvertisseurGFP-${{ matrix.os }}.tar.gz
+        tag: ${{ github.ref }}-${{ steps.strings.outputs.build-name }}
+
+    - name: Upload Release Asset Windows
+      if: runner.os == 'Windows'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ steps.strings.outputs.deploy-output-dir }}/*.zip
         asset_name: ConvertisseurGFP-${{ matrix.os }}.zip
         tag: ${{ github.ref }}-${{ steps.strings.outputs.build-name }}
 
