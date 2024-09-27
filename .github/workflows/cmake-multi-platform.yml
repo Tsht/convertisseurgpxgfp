@@ -54,7 +54,7 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-        echo "deploy-output-dir=${{ github.workspace }}" >> "$GITHUB_OUTPUT"
+        echo "deploy-output-dir=${{ github.workspace }}/deploy" >> "$GITHUB_OUTPUT"
         echo "build-name=$(date +'%Y-%m-%dT%H')" >> "$GITHUB_OUTPUT"
 
     - name: Configure CMake
@@ -80,14 +80,14 @@ jobs:
       shell: cmd
       run: |
         cd ${{ steps.strings.outputs.deploy-output-dir }}
-        cpack -G ZIP -C ${{ matrix.build_type }}
+        cpack -G ZIP -C ${{ matrix.build_type }} --config ${{ steps.strings.outputs.build-output-dir }}/CPackConfig.cmake
         cd ..
 
     - name: Package Linux
       if: runner.os == 'Linux'
       run: |
         cd ${{ steps.strings.outputs.deploy-output-dir }}
-        cpack -G TGZ -C ${{ matrix.build_type }}
+        cpack -G TGZ -C ${{ matrix.build_type }} --config ${{ steps.strings.outputs.build-output-dir }}/CPackConfig.cmake
         cd ..
 
     - name: Upload Release Asset
